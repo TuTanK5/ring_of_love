@@ -19,7 +19,19 @@ namespace ring_of_love
 
             On.BossRoomEventHandler.OnTriggerEnter2D += BossRoomEventHandler_OnTriggerEnter2D;
             On.BossRoomEventHandler.ActivateExitPortal += BossRoomEventHandler_ActivateExitPortal;
+            On.ExitRoomEventHandler.CreateSurvivalRoom += ExitRoomEventHandler_CreateSurvivalRoom;
             //On.NextLevelLoader.LoadNextLevel += NextLevelLoader_LoadNextLevel;
+        }
+
+        private SurvivalRoom ExitRoomEventHandler_CreateSurvivalRoom(On.ExitRoomEventHandler.orig_CreateSurvivalRoom orig, ExitRoomEventHandler self, float givenValue)
+        {
+            self.currentSRoom = Globals.ChaosInst<SurvivalRoom>(SurvivalRoom.Prefab, base.transform, self.centerSpawnLocation + Vector2.down);
+            BoxCollider2D[] components = self.currentSRoom.GetComponents<BoxCollider2D>();
+            foreach (BoxCollider2D boxCollider2D in components)
+            {
+                boxCollider2D.enabled = false;
+            }
+            return self.currentSRoom;
         }
 
         private static void RegisterItem(ICustomItem customItem)
@@ -41,9 +53,9 @@ namespace ring_of_love
 
         private System.Collections.IEnumerator BossRoomEventHandler_ActivateExitPortal(On.BossRoomEventHandler.orig_ActivateExitPortal orig, BossRoomEventHandler self)
         {
-            RingBox.spawnLocation = self.bossSpawnPosition;
-            Debug.Log(RingBox.spawnLocation);
-            UnityEngine.Object.Instantiate(RingBox.Prefab, self.bossSpawnPosition, Quaternion.identity);
+            RingBoxStatus.spawnLocation = self.bossSpawnPosition;
+            RingBoxStatus.spawnLocation.x -= 1f;
+            UnityEngine.Object.Instantiate(TreasureChestParty.Prefab, self.bossSpawnPosition, Quaternion.identity);
             On.TreasureChestParty.Break += TreasureChestParty_Break;
 
             SoundManager.PlayBGM(string.Empty);
@@ -62,7 +74,7 @@ namespace ring_of_love
 
         private void TreasureChestParty_Break(On.TreasureChestParty.orig_Break orig, TreasureChestParty self)
         {
-            if (RingBox.ringDelivered)
+            if (RingBoxStatus.ringDelivered)
             {
                 Debug.Log("Ring Delivered... No drop");
                 orig(self);
@@ -72,80 +84,18 @@ namespace ring_of_love
             self.destroyed = true;
             if (self.dropLoot)
             {
-                self.spawnLocation = RingBox.spawnLocation;
-                LootManager.DropHealth(self.spawnLocation, RingBox.healthDropCount);
+                self.spawnLocation = RingBoxStatus.spawnLocation;
+                LootManager.DropHealth(self.spawnLocation, RingBoxStatus.healthDropCount);
                 Debug.Log(self.spawnLocation);
                 LootManager.DropItem(self.spawnLocation, 1, itemID: TokenOfYes.staticID, curseChance: 0);
                 Debug.Log("Drop ring.......");
-                RingBox.ringDelivered = true;
+                RingBoxStatus.ringDelivered = true;
 
                 PoolManager.GetPoolItem<ConfettiEffect>().EmitSingle(50, self.spawnLocation);
-                //SoundManager.PlayAudioWithDistance("StandardChestOpen", self.spawnLocation);
+                SoundManager.PlayAudioWithDistance("StandardChestOpen", self.spawnLocation);
             }
 
         }
-
-        //private void NextLevelLoader_LoadNextLevel(On.NextLevelLoader.orig_LoadNextLevel orig, NextLevelLoader self)
-        //{
-        //    if (self.nextLevelName == string.Empty)
-        //    {
-        //        self.nextLevelName = NextLevelLoader.GetCurrentTierScene();
-        //        if (Level.isBossRushMode)
-        //        {
-        //            RunData.AddTimeStamp();
-        //        }
-        //        if (NextLevelLoader.InTierScene(string.Empty))
-        //        {
-        //            if (GameController.stageCount > ((!Level.isBossRushMode) ? GameController.stagesPerTier : GameController.stagesPerRush))
-        //            {
-        //                self.nextLevelName = GameController.bossLevelNameDict[Application.loadedLevelName];
-        //            }
-        //        }
-        //        else if (Application.loadedLevelName.Contains("BossLevel"))
-        //        {
-        //            GameController.stageCount = 0;
-        //            GameController.tierCount++;
-        //            if (Level.isBossRushMode)
-        //            {
-        //                switch (GameController.tierCount)
-        //                {
-        //                    default:
-        //                        self.nextLevelName = "FinalBossLevel";
-        //                        break;
-        //                    case 6:
-        //                        self.nextLevelName = "TitleScreen";
-        //                        break;
-        //                    //default:
-        //                    //    self.nextLevelName = NextLevelLoader.GetCurrentTierScene();
-        //                    //    break;
-        //                }
-        //            }
-        //            else
-        //            {
-        //                switch (GameController.tierCount)
-        //                {
-        //                    default:
-        //                        self.nextLevelName = "FinalBossLevel";
-        //                        break;
-        //                    case 4:
-        //                        self.nextLevelName = "Ending";
-        //                        break;
-        //                    //default:
-        //                    //    self.nextLevelName = NextLevelLoader.GetCurrentTierScene();
-        //                    //    break;
-        //                }
-        //            }
-        //        }
-        //    }
-        //    if (self.showLevelSummary)
-        //    {
-        //        GameController.levelSummary.Activate(self.nextLevelName);
-        //    }
-        //    else
-        //    {
-        //        GameController.LoadLevel(self.nextLevelName);
-        //    }
-        //}
 
         private void BossRoomEventHandler_OnTriggerEnter2D(On.BossRoomEventHandler.orig_OnTriggerEnter2D orig, BossRoomEventHandler self, Collider2D col)
         {

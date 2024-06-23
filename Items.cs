@@ -9,11 +9,11 @@ using Chaos.ListExtensions;
 
 namespace ring_of_love
 {
-    public class RingBox : TreasureChestParty
+    public class RingBoxStatus
     {
         public static bool ringDelivered = false;
-        public new static int healthDropCount = 13;
-        public new static Vector3 spawnLocation = new Vector3(0f,0f,0f);
+        public static int healthDropCount = 1;
+        public static Vector3 spawnLocation = new Vector3(0f,0f,0f);
     }
 
     public interface ICustomItem
@@ -29,29 +29,30 @@ namespace ring_of_love
 
         public static string staticID = "RingOfLovePlugin::TokenOfYes";
         public static string displayName = "Token of Saying YES";
-        public static string description = "Drop to say YES";
-        public static string srpitePath = "Super Necklace";
+        public static string description = "Set your health to 1.\nDrop to remove the effect and to say YES to the ultimate question:\nVy, will you marry Tan?";
+        public static string srpitePath = "TokenOfYesTickSized";
 
         public string StaticID => staticID;
         public string DisplayName => displayName;
         public string Description => description;
         public string SpritePath => srpitePath;
 
-        protected NumVarStatMod damageMod;
+        protected NumVarStatMod healthMod;
 
         public TokenOfYes()
         {
             this.ID = TokenOfYes.staticID;
             this.category = Item.Category.Misc;
-            this.damageMod = new NumVarStatMod(this.ID, 1.0f, 10, VarStatModType.Multiplicative, false); //Doubles damage
+            this.healthMod = new NumVarStatMod(this.ID, 1f, 0, VarStatModType.OverrideWithMods, true); // Set to 1
             this.notForSale = true;
             this.destroyOnDrop = true;
+            this.useSimpleInfo = true;
         }
         public override string ExtraInfo
         {
             get
             {
-                return base.PercentToStr(this.damageMod, "+");
+                return base.PercentToStr(this.healthMod, "+");
             }
         }
 
@@ -62,13 +63,16 @@ namespace ring_of_love
         public override void Deactivate()
         {
             this.SetModStatus(false);
-            Vector3 spawnLocation = RingBox.spawnLocation;
-            LootManager.DropItem(spawnLocation, 1, itemID: UltimateRing.staticID, curseChance: 0);
+            parentEntity.health.RestoreHealth(0, fullyRestoreHealth: true);
+            Vector3 spawnLocation = parentEntity.transform.localPosition;
+            LootManager.DropItem(spawnLocation, 1, itemID: UltimateRing.staticID);
+            SoundManager.PlayBGM(string.Empty);
+            SoundManager.PlayAudio("StageVictory");
         }
 
-        public virtual void SetModStatus(bool givenStatus)
+        public void SetModStatus(bool givenStatus)
         {
-            StatManager.ModifyAllStatData(this.damageMod, this.parentSkillCategory, StatData.damageStr, new StatManager.ModApplyConditional(base.IgnoreStatusConditional), givenStatus);
+            parentEntity.health.healthStat.Modify(healthMod, givenStatus);
         }
     }
 
@@ -76,45 +80,30 @@ namespace ring_of_love
     {
 
         public static string staticID = "RingOfLovePlugin::UltimateRing";
-        public static string displayName = "The Ultimate Ring";
-        public static string description = "The Ultimate Ring";
-        public static string srpitePath = "Super Necklace";
+        public static string displayName = "The Ultimate Ring of Love";
+        public static string description = "You Said YES!!!!!!!!!!  <3";
+        public static string srpitePath = "RingOfLoveSized";
 
         public string StaticID => staticID;
         public string DisplayName => displayName;
         public string Description => description;
         public string SpritePath => srpitePath;
  
-        protected NumVarStatMod damageMod;
 
         public UltimateRing()
         {
             this.ID = UltimateRing.staticID;
             this.category = Item.Category.Misc;
-            this.damageMod = new NumVarStatMod(this.ID, 1.0f, 10, VarStatModType.Multiplicative, false); //Doubles damage
-            //this.notForSale = true;
-        //    this.isCursed = true;
-        }
-        public override string ExtraInfo
-        {
-            get
-            {
-                return base.PercentToStr(this.damageMod, "+");
-            }
+            this.notForSale = true;
+            this.isCursed = true;
         }
 
         public override void Activate()
         {
-            this.SetModStatus(true);
-        }
-        public override void Deactivate()
-        {
-            this.SetModStatus(false);
+            //AudioClip weddingAudioClip = ImageHandler.LoadClip();
+            //SoundManager.PlayBGM(String.Empty);
+            //SoundManager.;
         }
 
-        public virtual void SetModStatus(bool givenStatus)
-        {
-            StatManager.ModifyAllStatData(this.damageMod, this.parentSkillCategory, StatData.damageStr, new StatManager.ModApplyConditional(base.IgnoreStatusConditional), givenStatus);
-        }
     }
 }
