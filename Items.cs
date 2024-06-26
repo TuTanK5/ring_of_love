@@ -6,14 +6,37 @@ using BepInEx;
 using BepInEx.Configuration;
 using UnityEngine;
 using Chaos.ListExtensions;
+using LegendAPI;
+
 
 namespace ring_of_love
 {
-    public class RingBoxStatus
+
+
+    public class RingBoxUtils
     {
         public static bool ringDelivered = false;
         public static int healthDropCount = 1;
         public static Vector3 spawnLocation = new Vector3(0f,0f,0f);
+        public static BossRoomEventHandler bossRoomHandler;
+        public static On.BossRoomEventHandler.orig_ActivateExitPortal orig_ActivateExitPortal;
+
+        public static void RegisterItem(ICustomItem customItem)
+        {
+            ItemInfo itemInfo = new ItemInfo();
+            itemInfo.name = customItem.StaticID;
+            itemInfo.text = new TextManager.ItemInfo()
+            {
+                itemID = customItem.StaticID,
+                displayName = customItem.DisplayName,
+                description = customItem.Description,
+            };
+            itemInfo.tier = 1;
+            itemInfo.priceMultiplier = 1;
+            itemInfo.icon = ImageHandler.LoadSprite(customItem.SpritePath);
+            itemInfo.item = (Item)customItem;
+            Items.Register(itemInfo);
+        }
     }
 
     public interface ICustomItem
@@ -28,8 +51,8 @@ namespace ring_of_love
     {
 
         public static string staticID = "RingOfLovePlugin::TokenOfYes";
-        public static string displayName = "Token of Saying YES";
-        public static string description = "Set your health to 1.\nDrop to remove the effect and to say YES to the ultimate question:\nVy, will you marry Tan?";
+        public static string displayName = "Token of Confirmation";
+        public static string description = "Set your health to 1.\nDrop to remove the effect and say YES to the ultimate question:\nVy, will you marry Tan?";
         public static string srpitePath = "TokenOfYesTickSized";
 
         public string StaticID => staticID;
@@ -43,17 +66,10 @@ namespace ring_of_love
         {
             this.ID = TokenOfYes.staticID;
             this.category = Item.Category.Misc;
-            this.healthMod = new NumVarStatMod(this.ID, 1f, 0, VarStatModType.OverrideWithMods, true); // Set to 1
+            this.healthMod = new NumVarStatMod(this.ID, 1f, 10, VarStatModType.OverrideWithMods, true); // Set to 1
             this.notForSale = true;
             this.destroyOnDrop = true;
             this.useSimpleInfo = true;
-        }
-        public override string ExtraInfo
-        {
-            get
-            {
-                return base.PercentToStr(this.healthMod, "+");
-            }
         }
 
         public override void Activate()
@@ -81,7 +97,7 @@ namespace ring_of_love
 
         public static string staticID = "RingOfLovePlugin::UltimateRing";
         public static string displayName = "The Ultimate Ring of Love";
-        public static string description = "You Said YES!!!!!!!!!!  <3";
+        public static string description = "Vy Said YESSSSSSSSSSSSSSSSSSSSSS!!!!  <3";
         public static string srpitePath = "RingOfLoveSized";
 
         public string StaticID => staticID;
@@ -96,13 +112,12 @@ namespace ring_of_love
             this.category = Item.Category.Misc;
             this.notForSale = true;
             this.isCursed = true;
+            this.useSimpleInfo = true;
         }
 
         public override void Activate()
         {
-            //AudioClip weddingAudioClip = ImageHandler.LoadClip();
-            //SoundManager.PlayBGM(String.Empty);
-            //SoundManager.;
+            RingBoxUtils.bossRoomHandler.StartCoroutine(RingBoxUtils.orig_ActivateExitPortal(RingBoxUtils.bossRoomHandler));
         }
 
     }
