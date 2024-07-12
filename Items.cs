@@ -1,23 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using BepInEx;
-using BepInEx.Configuration;
-using UnityEngine;
-using Chaos.ListExtensions;
+﻿using UnityEngine;
 using LegendAPI;
 
 
 namespace ring_of_love
 {
-
-
     public class RingBoxUtils
     {
         public static bool ringDelivered = false;
-        public static int healthDropCount = 1;
-        public static Vector3 spawnLocation = new Vector3(0f,0f,0f);
+        public static int healthDropCount = 3;
+        public static Vector3 spawnLocation = new Vector3(0f, 0f, 0f);
         public static BossRoomEventHandler bossRoomHandler;
         public static On.BossRoomEventHandler.orig_ActivateExitPortal orig_ActivateExitPortal;
 
@@ -31,7 +22,7 @@ namespace ring_of_love
                 displayName = customItem.DisplayName,
                 description = customItem.Description,
             };
-            itemInfo.tier = 1;
+            itemInfo.tier = 5;
             itemInfo.priceMultiplier = 1;
             itemInfo.icon = ImageHandler.LoadSprite(customItem.SpritePath);
             itemInfo.item = (Item)customItem;
@@ -80,10 +71,13 @@ namespace ring_of_love
         {
             this.SetModStatus(false);
             parentEntity.health.RestoreHealth(0, fullyRestoreHealth: true);
+
             Vector3 spawnLocation = parentEntity.transform.localPosition;
             LootManager.DropItem(spawnLocation, 1, itemID: UltimateRing.staticID);
-            SoundManager.PlayBGM(string.Empty);
-            SoundManager.PlayAudio("StageVictory");
+            if (RingBoxUtils.bossRoomHandler != null)
+            {
+                RingBoxUtils.bossRoomHandler.StartCoroutine(RingBoxUtils.orig_ActivateExitPortal(RingBoxUtils.bossRoomHandler));
+            }
         }
 
         public void SetModStatus(bool givenStatus)
@@ -94,7 +88,6 @@ namespace ring_of_love
 
     public class UltimateRing : Item, ICustomItem
     {
-
         public static string staticID = "RingOfLovePlugin::UltimateRing";
         public static string displayName = "The Ultimate Ring of Love";
         public static string description = "Vy Said YESSSSSSSSSSSSSSSSSSSSSS!!!!  <3";
@@ -104,7 +97,6 @@ namespace ring_of_love
         public string DisplayName => displayName;
         public string Description => description;
         public string SpritePath => srpitePath;
- 
 
         public UltimateRing()
         {
@@ -117,8 +109,7 @@ namespace ring_of_love
 
         public override void Activate()
         {
-            RingBoxUtils.bossRoomHandler.StartCoroutine(RingBoxUtils.orig_ActivateExitPortal(RingBoxUtils.bossRoomHandler));
+            parentEntity.health.RestoreHealth(0, fullyRestoreHealth: true);
         }
-
     }
 }
