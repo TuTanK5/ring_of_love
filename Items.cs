@@ -73,7 +73,7 @@ namespace ring_of_love
             parentEntity.health.RestoreHealth(0, fullyRestoreHealth: true);
 
             Vector3 spawnLocation = parentEntity.transform.localPosition;
-            LootManager.DropItem(spawnLocation, 1, itemID: UltimateRing.staticID);
+            LootManager.DropItem(spawnLocation, 2, itemID: UltimateRing.staticID);
             if (RingBoxUtils.bossRoomHandler != null)
             {
                 RingBoxUtils.bossRoomHandler.StartCoroutine(RingBoxUtils.orig_ActivateExitPortal(RingBoxUtils.bossRoomHandler));
