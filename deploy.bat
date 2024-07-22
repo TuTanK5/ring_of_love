@@ -1,0 +1,1 @@
+copy /Y .\bin\Debug\net35\ring_of_love.dll "C:\Users\tantu\AppData\Roaming\r2modmanPlus-local\WizardOfLegend\profiles\my_mod\BepInEx\plugins"
