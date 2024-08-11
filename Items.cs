@@ -73,7 +73,8 @@ namespace ring_of_love
             parentEntity.health.RestoreHealth(0, fullyRestoreHealth: true);
 
             Vector3 spawnLocation = parentEntity.transform.localPosition;
-            LootManager.DropItem(spawnLocation, 2, itemID: UltimateRing.staticID);
+            LootManager.DropItem(spawnLocation, 1, itemID: UltimateRing.staticID);
+            LootManager.DropItem(spawnLocation, 1, itemID: UltimateRingTwo.staticID);
             if (RingBoxUtils.bossRoomHandler != null)
             {
                 RingBoxUtils.bossRoomHandler.StartCoroutine(RingBoxUtils.orig_ActivateExitPortal(RingBoxUtils.bossRoomHandler));
@@ -101,6 +102,32 @@ namespace ring_of_love
         public UltimateRing()
         {
             this.ID = UltimateRing.staticID;
+            this.category = Item.Category.Misc;
+            this.notForSale = true;
+            this.isCursed = true;
+            this.useSimpleInfo = true;
+        }
+
+        public override void Activate()
+        {
+            parentEntity.health.RestoreHealth(0, fullyRestoreHealth: true);
+        }
+    }
+    public class UltimateRingTwo : Item, ICustomItem
+    {
+        public static string staticID = "RingOfLovePlugin::UltimateRingTwo";
+        public static string displayName = "The Ultimate Ring of Love";
+        public static string description = "Vy Said YESSSSSSSSSSSSSSSSSSSSSS!!!!  <3";
+        public static string srpitePath = "RingOfLoveSized";
+
+        public string StaticID => staticID;
+        public string DisplayName => displayName;
+        public string Description => description;
+        public string SpritePath => srpitePath;
+
+        public UltimateRingTwo()
+        {
+            this.ID = UltimateRingTwo.staticID;
             this.category = Item.Category.Misc;
             this.notForSale = true;
             this.isCursed = true;

@@ -12,6 +12,8 @@ namespace ring_of_love
 
             RingBoxUtils.RegisterItem(new TokenOfYes());
             RingBoxUtils.RegisterItem(new UltimateRing());
+            RingBoxUtils.RegisterItem(new UltimateRingTwo());
+
 
             On.BossRoomEventHandler.ActivateExitPortal += BossRoomEventHandler_ActivateExitPortal;
         }
