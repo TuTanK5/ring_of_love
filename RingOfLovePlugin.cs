@@ -28,6 +28,13 @@ namespace ring_of_love
                 yield break;
             }
 
+            if (!self.pvpStarted || !GameController.activePlayers[0].fsm.currentStateName.Contains("Dead"))
+            {
+                Debug.Log("No PVP or player 0 alive... No drop");
+                yield return orig(self);
+                yield break;
+            }
+
             RingBoxUtils.bossRoomHandler = self;
             RingBoxUtils.orig_ActivateExitPortal = orig;
 
